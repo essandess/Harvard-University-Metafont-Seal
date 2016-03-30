@@ -12,7 +12,7 @@ This Metafont code may be used to include the Harvard seal within TeX and LaTeX 
 
 ### Metafont proof
 
-The Metafont proof above was created using the TeXLive commands:
+The Metafont proof above was created using the TeX Live commands:
 ```
 mktextfm gray ; mktextfm black
 mf '\mode:=proof; mag:=360/2602; input harvard64.mf'
