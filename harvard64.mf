@@ -1,0 +1,503 @@
+% METAFONT Harvard Seal.
+
+% The MIT License
+% 
+% Copyright © 2016 Steven Thomas Smith
+% 
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+% 
+% The above copyright notice and this permission notice shall be included in
+% all copies or substantial portions of the Software.
+% 
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+% THE SOFTWARE.
+
+% The border and books were coded by SS, January, 1991.
+% The letters were coded by SS, August, 1991.
+
+font_identifier:="HARVARD"; font_size 64pt#;
+
+mode_setup;
+
+% The border and books
+ubind#:=2/100in#;	% A unit width (width of binding)
+height#:=64pt#;	% The height of the seal
+width#:=47/64in#;	% The width of the seal
+bthick#:=.75pt#;	% Thick lines (i.e., seal border)
+bmedium#:=.4pt#;	% Medium lines
+bthin#:=.3333pt#;	% Thin lines
+head:=.25;		% The fraction of head in the seal
+vee:=130;		% The angle of the vee in the seal
+rad#:=.5pt#;		% The book cover's corner radius
+srad#:=.25pt#;		% A smaller radius
+diam#:=3/128in#;	% The book buckle's diameter
+coverw#:=16.6667/128in#;% Book cover width
+coverh#:=16.25/64in#;	% Book cover height
+covers#:=1/64in#;	% Shift distance to exposed cover
+pageh#:=13.5/64in#;	% Book page height
+pages#:=1.5/64in#;	% Shift distance to exposed page
+pageang:=30;		% The angle of the pages
+bcoverw#:=20.5/128in#;	% Big book cover width
+bucklel#:=2/64in#;	% Buckle length (includin rounded part)
+buckle_off#:=3/64in#;	% Buckle distance from top and bottom
+vebindx#:=12.5/64in#;	% Horizontal offset of VE book
+vebindy#:=34/64in#;	% Vertical offset of VE book
+tasbindy#:=11/64in#;	% Vertical offset of TAS book
+define_pixels(ubind,width,height,coverw,coverh,covers,pageh,pages,
+ bindh,bcoverw,rad,srad,diam,bucklel,buckle_off);
+define_whole_pixels(vebindx,bthick,bmedium,bthin);
+define_whole_vertical_pixels(vebindy,tasbindy);
+
+display_border_pxls=10;
+screen_cols:=width+2*display_border_pxls;
+screen_rows:=height+2*display_border_pxls;
+def openit = openwindow currentwindow
+ from origin to (screen_rows,screen_cols)
+ at (-display_border_pxls,height+display_border_pxls) enddef;
+def screenrule(expr w,z) = enddef;
+
+% The rcorner macro draws rounded corners.  If corners have incoming/outgoing
+% directions that are integer multiples of 90 degrees, the |p| coordinate
+% should be |good.x|'d and |good.y|'d.
+numeric ra_[]; pair rp_[];
+def rcorner(expr p,r,t,tt) = % Rounded corner at |p| of radius |r| from angle |t| to |tt|
+ hide(ra_1:=t mod 360; ra_2:=tt mod 360; ra_0:=(ra_2-ra_1) mod 360;
+  if ra_0>180: ra_0:=ra_0-360; fi if ra_1>180: ra_2:=ra_1-360; fi
+  if ra_2>180: ra_2:=ra_2-360; fi )
+ if ra_1=ra_2: p
+ else: hide(if ra_0>0: % left turn
+   rp_0:=(-r*sind(ra_0/2)/cosd(ra_0/2),r);
+   rp_1:=(0,-r) shifted rp_0 rotated ra_1 shifted p;
+   rp_2:=(r,0) rotated (ra_0/2-90) shifted rp_0 rotated ra_1 shifted p;
+   rp_3:=(r,0) rotated (ra_0-90) shifted rp_0 rotated ra_1 shifted p;
+  else: ra_0:=abs ra_0; % right turn
+   rp_0:=(-r*sind(ra_0/2)/cosd(ra_0/2),-r);
+   rp_1:=(0,r) shifted rp_0 rotated ra_1 shifted p;
+   rp_2:=(r,0) rotated (90-ra_0/2) shifted rp_0 rotated ra_1 shifted p;
+   rp_3:=(r,0) rotated (90-ra_0) shifted rp_0 rotated ra_1 shifted p; fi )
+ (rp_1{dir ra_1}..rp_2..{dir ra_2}rp_3) fi enddef;
+
+%Parameters for the letters
+u#:=.4pt#;	% unit width
+ht#:=7pt#;	% character height
+thin#:=.4pt#;	% thin stroke width
+thick#:=.75pt#;	% thick stroke width
+slab#:=thin#;	% vertical distance from |z$b| to |z$c| in serif
+srnd#:=4/36pt#;	% serif roundoff
+jut#:=.6pt#;	% normal amount of serif protrusion
+bracket#:=pt#;	% vertical distance from |z$a| to |z$l| in serif
+dish#:=3/36pt#;	% dish amount in serifs
+beak#:=25/36pt#;% vertical protrusion of beak serifs
+beak_jut#:=16/36pt#;    % horizontal protrusion of beak serifs
+serif_darkness:=1/3;	% fraction that controls serif darkness
+beak_darkness:=1/3;	% fraction that controls beak darkness
+superness:=1/sqrt2;    % parameter for superellipses
+
+define_pixels(u,jut,bracket,dish,srnd,beak,beak_jut);
+define_whole_vertical_pixels(ht);
+define_whole_blacker_pixels(thin,thick);
+define_whole_vertical_blacker_pixels(slab);
+
+% Macros for the letters
+% Rounded serifs and rounded serifs with dishes
+def serif(suffix $)(expr breadth,theta,left_jut,right_jut) =
+ penpos$(breadth/abs sind theta,0);
+ z$a-z$l=z$f-z$r=(bracket/abs sind theta)*dir theta;
+ y$c=y$d; y$b=y$e=y$; y$b-y$c=if theta<0: - fi slab;
+ x$b=x$c=x$l-left_jut; x$d=x$e=x$r+right_jut;
+ labels($a,$b,$c,$d,$e,$f) enddef;
+
+def serif_edge suffix $ =
+ (serif_bracket($a,$l,$b,$c)
+  --rcorner(z$c,srnd,angle(z$c-z$b),angle(z$d-z$c))
+  --rcorner(z$d,srnd,angle(z$d-z$c),angle(z$e-z$d))
+  --reverse serif_bracket($f,$r,$e,$d)) enddef;
+
+def dish_serif_edge suffix $ =
+ (serif_bracket($a,$l,$b,$c)
+  --rcorner(z$c,srnd,angle(z$c-z$b),angle(z$d-z$c)){z$d-z$c}
+  ...(.5[x$c,x$d],y$c+if y$c>y$b: - fi dish){z$d-z$c}
+  ...rcorner(z$d,srnd,angle(z$d-z$c),angle(z$e-z$d)){z$d-z$c}
+  --reverse serif_bracket($f,$r,$e,$d)) enddef;
+
+def serif_bracket(suffix i,j,k,l) =
+ (z.i{z.j-z.i}...serif_darkness[z.j,.5[z.i,z.k]]{z.k-z.i}
+  ...rcorner(z.k,srnd,angle(z.k-z.j),angle(z.l-z.k))) enddef;
+
+def barb(suffix $)(expr breadth,theta,left_jut,right_jut) =
+ z$r-z$l=whatever*dir(theta); y$r-y$l=if theta<0: - fi breadth;
+ x$=.5(x$l+x$r); y$=.5(y$l+y$r);
+ z$a-z$l=z$f-z$r=bracket*if theta<0: - fi left;
+ z$b-z$c=z$e-z$d=(slab/abs sind theta)*if theta<0: - fi left;
+ z$l-z$b=(left_jut/abs sind theta)*dir theta;
+ z$e-z$r=(right_jut/abs sind theta)*dir theta;
+ labels($a,$b,$c,$d,$e,$f) enddef;
+
+def arm(suffix $,$$,@)(expr darkness,jut) =	% arm from |z$| to |z$$|
+ x@0=good.x(x$$r-jut); y@0=y$r;
+ y@1=y$l; z@1=z$$l+whatever*(z$$r-z@0);
+ z@2=.5[z$l,z@1];
+ fill z$$l{z@1-z$$l}...darkness[z@1,.5[z@2,z$$l]]
+  ...z@2---z$l--z$r---(x@2,y@0)...0.75[z@1,z@0]...z$$r{z$$r-z@0}..cycle;
+ penlabels(@0,@1,@2); enddef;
+
+def tail(suffix $,$$,@)(expr darkness,jut) =	% tail from |z$| to |z$$|
+ x@0=good.x(x$$l-jut); y@0=y$$l;
+ y@1=y$$r; z@1=z$r+whatever*(z$l-z@0);
+ z@2=.5[z$r,z@1]; y@3=y@2; z@3=z$l+whatever*(z@0-z$l);
+ fill z$$r{z@1-z$$r}...darkness[z@1,.5[z@2,z$$r]]
+  ...z@2---z$r--z$l---z@3...0.75[z@1,z@0]...z$$l{z$$l-z@0}..cycle;
+ penlabels(@0,@1,@2,@3); enddef;
+
+vardef super_arc.r(suffix $,$$) = % outside of super-ellipse
+ pair center,corner;
+ if y$=y$r: center=(x$$r,y$r); corner=(x$r,y$$r);
+ else: center=(x$r,y$$r); corner=(x$$r,y$r); fi
+ z$.r{corner-z$.r}...superness[center,corner]{z$$.r-z$.r}
+  ...{z$$.r-corner}z$$.r enddef;
+
+vardef super_arc.l(suffix $,$$) = % inside of super-ellipse
+ pair center,corner;
+ if y$=y$r: center=(x$$l,y$l); corner=(x$l,y$$l);
+ else: center=(x$l,y$$l); corner=(x$$l,y$l); fi
+ z$l{corner-z$l}...superness[center,corner]{z$$l-z$l}
+  ...{z$$l-corner}z$$l enddef;
+
+def ellipse_set(suffix $,@,@@,$$) = % given |z$,x@,z$$|, find |y@| and |z@@|
+% such that the path |z${x@-x$,0}..z@{0,y@-y$}..{z$$-z@@}z@@|
+% is consistent with an ellipse
+% and such that the line |z@@--z$$| has a given |slope|
+ alpha_:=slope*(x@-x$); beta_:=y$$-y$-slope*(x$$-x$);
+ gamma_:=alpha_/beta_;
+ y@-y$=.5(beta_-alpha_*gamma_);
+ x@@-x$=-2gamma_*(x@-x$)/(1+gamma_*gamma_);
+ y@@-y$$=slope*(x@@-x$$) enddef;
+
+def .... = .. tension atleast .9 .. enddef;
+
+
+beginchar("H",width#,height#,0); "Harvard Seal";
+ pickup pencircle scaled bthick;
+ x1636=hround .5w; bot y1636=0;
+ top y3=top y4=h; lft x3=rt x4-w=0;
+ y2=y5=vround((1-head)*h); lft x2=rt x5-w=0;
+ draw z1636{dir(90+vee/2)}...{up}z2--z3--z4--z5{down}
+  ...{dir(-90-vee/2)}z1636;  % The border
+ penlabels(1636,2,3,4,5);
+ forsuffixes $=2,3,4,5: x$:=whatever; y$:=whatever; endfor
+ picture border; border:=currentpicture; clearit;
+% The book binding.
+ pickup pencircle scaled bmedium;
+ path bind; numeric a,b,c,d;
+ a=good.x 0.6ubind; b=good.y 1.5ubind; c=good.y b/2; d=good.y b/4;
+ bind=superellipse((a,c),(0,b),(-a,c),(0,0),.75);
+% The VE and RI books.
+ currenttransform:=identity shifted (vebindx,vebindy);
+ z1=(((0,d)--(coverw,d)) intersectionpoint bind); y1:=good.y y1;
+ x2=good.x coverw; y2=y1; x3=x2; y3=good.y(d+buckle_off);
+ x4=good.x(coverw+bucklel); y4=y3; x5=x4; y5=good.y(y3+diam);
+ x6=x2; y6=y5;
+ path quartercover; quartercover=z1--rcorner(z2,rad,0,90)--
+  rcorner(z3,rad,90,0)--rcorner(z4,diam/2,0,90)--rcorner(z5,diam/2,90,180)
+  --rcorner(z6,rad,180,90)--(x6,d+coverh/2+ubind);
+ numeric e; e:=covers+d;
+ pickup pencircle scaled bthin;
+ z7=(((0,e)--(coverw,e)) intersectionpoint bind);
+ z8=(good.x coverw-covers,good.y e); x9=x8; y9=good.y(pageh+e);
+ draw z7--rcorner(z8,srad,0,90)--z9;
+ z8c=rp_2;  % Page corner
+ z10-z8c=dir135 scaled (sqrt2*pages); x10:=good.x x10; y10:=good.y y10;
+ x9:=x8c;
+ z11-z9=dir135 scaled (sqrt2*pages); x11:=good.x x11; y11:=good.y y11;
+ z12=(0,b-ubind/16); z13-z12=z11-z10;
+ pickup pencircle scaled bmedium;
+ draw quartercover;
+ draw quartercover reflectedabout ((0,good.y .5coverh),(1,good.y .5coverh));
+ pickup pencircle scaled bthin;
+ draw z8c--z10;
+ erase fill z9--z11--(0,y11)--(0,y9)--cycle; draw z9--z11;
+ path pagep; numeric t; pagep=z12{dir(pageang+10)}..{dir pageang}z10;
+ (t,whatever)=pagep intersectiontimes bind; draw subpath (t,infinity) of pagep;
+ draw z13{dir(pageang+10)}..{dir pageang}z11; draw z10--z11;
+ currentpicture:=currentpicture+currentpicture
+  reflectedabout ((0,0),(0,1)) shifted (2vebindx,0);
+ draw (bind intersectionpoint ((0,b/2)--(0,2b)))--z13;
+ pickup pencircle scaled bmedium; draw bind;
+ penlabels(1,2,3,4,5,6,7,8c,9,10,11,12,13);
+ forsuffixes $=1,2,3,4,5,6,7,8,8c,9,10,11,12,13:
+  x$:=whatever; y$:=whatever; endfor
+ picture veribook;
+ veribook:=currentpicture + currentpicture shifted (hround(w-2vebindx),0);
+ clearit;
+% The TAS book.
+ currenttransform:=identity shifted (.5w,tasbindy);
+ z1=(((0,d)--(bcoverw,d)) intersectionpoint bind); y1:=good.y y1;
+ x2=good.x bcoverw; y2=y1; x3=x2; y3=good.y(d+buckle_off);
+ x4=good.x(bcoverw+bucklel); y4=y3; x5=x4; y5=good.y(y3+diam);
+ x6=x2; y6=y5;
+ path quartercover; quartercover=z1--rcorner(z2,rad,0,90)--
+  rcorner(z3,rad,90,0)--rcorner(z4,diam/2,0,90)--rcorner(z5,diam/2,90,180)
+  --rcorner(z6,rad,180,90)--(x6,d+coverh/2+ubind);
+ numeric e; e:=covers+d;
+ pickup pencircle scaled bthin;
+ z7=(((0,e)--(bcoverw,e)) intersectionpoint bind);
+ z8=(good.x bcoverw-covers,good.y e); x9=x8; y9=good.y(pageh+e);
+ draw z7--rcorner(z8,srad,0,90)--z9;
+ z8c=rp_2;  % Page corner
+ z10-z8c=dir135 scaled (sqrt2*pages); x10:=good.x x10; y10:=good.y y10;
+ x9:=x8c;
+ numeric page_offset; page_offset=y10;
+ z11-z9=dir135 scaled (sqrt2*pages); x11:=good.x x11; y11:=good.y y11;
+ z12=(0,b-ubind/16); z13-z12=z11-z10;
+ pickup pencircle scaled bmedium;
+ draw quartercover;
+ draw quartercover reflectedabout ((0,good.y .5coverh),(1,good.y .5coverh));
+ pickup pencircle scaled bthin;
+ draw z8c--z10;
+ erase fill z9--z11--(0,y11)--(0,y9)--cycle; draw z9--z11;
+ path pagep; numeric t; pagep=z12{dir(pageang+10)}..{dir pageang}z10;
+ (t,whatever)=pagep intersectiontimes bind; draw subpath (t,infinity) of pagep;
+ draw z13{dir(pageang+10)}..{dir pageang}z11; draw z10--z11;
+ currentpicture:=currentpicture+currentpicture
+  reflectedabout ((0,0),(0,1)) shifted (w,0);
+ draw (bind intersectionpoint ((0,b/2)--(0,2b)))--z13;
+ pickup pencircle scaled bmedium; draw bind;
+ penlabels(1,2,3,4,5,6,7,8,9,10,11,12,13);
+ forsuffixes $=1,2,3,4,5,6,7,8,8c,9,10,11,12,13:
+  x$:=whatever; y$:=whatever; endfor
+ picture tasbook; tasbook:=currentpicture; clearit;
+
+% convenient definitions for letters
+picture veritas;
+def beginletter(expr c,w_sharp,h_sharp,d_sharp) =
+ begingroup
+ wl:=hround(w_sharp*hppp); hl:=vround(h_sharp*hppp); dl:=vround(d_sharp*hppp);
+enddef;
+def endletter = endgroup enddef;
+
+% The `V'
+currenttransform:=identity shifted (vebindx,vebindy)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (-good.x(13u+1.5u),0);
+beginletter("V",13u#,ht#,0);
+z1=(.5wl,-.05hl);		% bottom point
+x4l=wl-x5r=2u; y4l=y5r=hl-slab;	% top points
+numeric theta[];
+theta4=angle(z1-z4l);		% left stroke angle
+theta5=angle(z1-z5r);		% right stroke angle
+serif(4,thick,theta4,jut,.6jut);% left serifs
+serif(5,thin,theta5,.6jut,jut);	% left serifs
+z0=z4r+whatever*dir theta4
+  =z5l+whatever*dir theta5;	% inside top point
+fill z1--dish_serif_edge4--z0	% the left stroke
+ & z0--dish_serif_edge5--z1 & cycle;	% the right stroke
+penlabels(0,1,4,5); endletter;
+veritas:=currentpicture;
+forsuffixes $=0,1,2,3,4,5:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `E'
+currenttransform:=identity shifted (vebindx,vebindy)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (good.x 1.5u,0);
+beginletter("E",12u#,ht#,0);
+x1l=x2l=2u; y2=hl-y1=slab;
+serif(1,thick,-90,jut,jut);
+serif(2,thick,90,jut,jut);
+fill serif_edge2--reverse serif_edge1--cycle; % stem
+penpos3(thin,90); y3r=hl; x3=x1; x4r=hround(wl-3u-slab); y4=y3;
+barb(4,thin,110,jut,.6jut);
+fill z3l--serif_edge4--z3r--cycle;
+penpos5(thin,90); y5=vround(.55[y2,y1]); x5=x1;
+x6-x5=5u; y6=y5;
+barb(6,thin,90,jut,jut);
+fill z5l--serif_edge6--z5r--cycle;
+penpos7(slab,-90); penpos8(thin,0);
+y7r=0; x7=x2; x8r=hround(wl-.75u); y8=good.y(y7l+7/6beak)+eps;
+arm(7,8,h,1.2beak_darkness,1.5beak_jut);
+penlabels(1,2,3,4,5,6,7,8); endletter;
+veritas:=veritas+currentpicture;
+forsuffixes $=1,2,3,4,5,6,7,8:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `R'
+currenttransform:=identity shifted (vebindx,vebindy)
+ shifted (hround(w-2vebindx),0)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (-good.x(12u+1.5u),0);
+beginletter("R",12u#,ht#,0);
+x1l=x2l=2u; y2=hl-y1=slab;
+serif(1,thick,-90,jut,jut);
+serif(2,thick,90,jut,jut);
+fill dish_serif_edge2--reverse serif_edge1--cycle; % stem
+penpos3(slab,90); penpos4(slab,90);
+penpos5(thick,0);
+penpos6(thin,-90); penpos7(thin,-90);
+z3r=(x1,hl); y4=y3; y5=.5[y4l,y6l]; y6=y7;
+x7=x2; y7l=vround(.5hl+.5thin); x4=x6;
+x4=.5wl-.5u; x5r=hround(wl-1.5u);
+x4l:=x6l:=x4-.125thick;
+penstroke z3e---z4e..z5e{down}..z6e---z7e;
+penpos8(thick,0); x8l=x1r; y8=y7r;
+penpos9(.6thin,90); x9=x5r+.75u; y9l=0;
+tail(8,9,t,1.2beak_darkness,2beak_jut);
+penlabels(1,2,3,4,5,6,7,8,9); endletter;
+veritas:=veritas+currentpicture;
+forsuffixes $=1,2,3,4,5,6,7,8,9,a1,a2:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `I'
+currenttransform:=identity shifted (vebindx,vebindy)
+ shifted (hround(w-2vebindx),0)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (good.x 3.5u,0);
+beginletter("I",6u#,ht#,0);
+x1=x2=.5wl;
+y1=hl-y2; y2=slab;
+serif(1,thick,-90,1.1jut,1.1jut);	% upper serifs
+serif(2,thick,90,1.1jut,1.1jut);	% lower serifs
+fill dish_serif_edge2--reverse dish_serif_edge1--cycle;	% the stroke
+penlabels(1,2); endletter;
+veritas:=veritas+currentpicture;
+forsuffixes $=1,2:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `T'
+currenttransform:=identity shifted (.5w,tasbindy)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (-good.x(13u+4u+.5u),0);
+beginletter("T",13u#,ht#,0);
+x1=x2=.5wl; y2=hl-y1=slab;
+serif(1,thick,-90,jut,jut);
+serif(2,thick,90,jut,jut);
+fill serif_edge1--reverse dish_serif_edge2--cycle;
+x3r=hround(wl-2u); x4=hround(2u); y3r=y4l=hl;
+barb(3,slab,85,jut,.5jut);
+barb(4,slab,-110,.5jut,jut);
+fill serif_edge3--serif_edge4--cycle;
+penlabels(1,2,3,4); endletter;
+veritas:=veritas+currentpicture;
+forsuffixes $=1,2,3,4:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `A'
+currenttransform:=identity shifted (.5w,tasbindy)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (-good.x(6.5u-thin/2),0);
+beginletter("A",13u#,ht#,0);
+z1=(.5wl,1.05hl);			% top point
+x4l=wl-x5r=2u; y4l=y5r=slab;	% bottom points
+numeric theta[];
+theta4=angle(z1-z4l);		% left stroke angle
+theta5=angle(z1-z5r);		% right stroke angle
+serif(4,thin,theta4,jut,.6jut);	% left serifs
+serif(5,thick,theta5,.6jut,jut);% right serifs
+z0=z4r+whatever*dir theta4
+  =z5l+whatever*dir theta5;	% inside top point
+fill z1--dish_serif_edge4--z0	% the left stroke
+ & z0--dish_serif_edge5--z1 & cycle;	% the right stroke
+penpos2(whatever,theta4);
+penpos3(whatever,theta5);
+y2r=y3r=.4[y4,y0];		% crossbar height
+y2l=y3l=y2r-thin;		% crossbar thickness
+z2=whatever[z1,z4r];
+z3=whatever[z1,z5r];
+penstroke z2e--z3e;		% the cross bar
+penlabels(0,1,2,3,4,5); endletter;
+veritas:=veritas+currentpicture;
+forsuffixes $=0,1,2,3,4,5:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+% The `S'
+currenttransform:=identity shifted (.5w,tasbindy)
+ shifted (0,good.y((pageh-ht)/2+page_offset))
+ shifted (good.x(6u+u),0);
+beginletter("S",10u#,ht#,0);
+numeric theta; theta=90-angle(30u,hl); slope:=-hl/30u;	% angle at middle
+numeric ess'; ess'=thick;
+penpos2(slab,-90); penpos0(ess',theta); penpos7(slab,-90);
+x2+x7=2x0=wl; x7-x2=u; y2l=hl; y7r=0;
+y0=.52hl; x3l=hround u; x6r=hround(wl-u);
+x3r-x3l=x6r-x6l=hround .5[slab,ess'];
+ellipse_set(2l,3l,4l,0l); ellipse_set(2r,3r,4r,0r); y3=y3r;
+ellipse_set(7l,6l,5l,0l); ellipse_set(7r,6r,5r,0r); y6=y6r;
+penstroke super_arc.e(2,3) & z3e{down}
+ ..z4e---z5e..z6e{down} & super_arc.e(6,7);		% main stroke
+penpos1(thin,180); penpos8(thin,180);
+x1l=hround(wl-2u); x8r=hround u;
+y1=vround(hl-1.25jut); y8=vround 1.5jut;
+penpos10(slab,90); z10l=z1r; x10b=x10l; y10l-y10b=jut;
+y10c=y10b; x10c-x10b=x10d-x10e=slab;
+y10e-y10b=y10d-y10c=vround 2.25jut; x10e=x10b;
+path upper_arc,lower_arc;
+numeric s,t,s_bracket; pair sigma,tau;
+upper_arc=z1l{x2-x1,4(y2-y1)}....{left}z2l;
+lower_arc=z1r{x2-x1,4(y2-y1)}....{left}z2r; s_bracket=.5bracket;
+s=xpart(upper_arc intersectiontimes ((x10-s_bracket,0)--(x10-s_bracket,hl)));
+x10f=xpart point s of upper_arc; y10f=ypart point s of upper_arc;
+sigma=direction s of upper_arc;  s_bracket:=.7bracket;
+t=xpart(lower_arc intersectiontimes ((x10-s_bracket,0)--(x10-s_bracket,hl)));
+x10a=xpart point t of lower_arc; y10a=ypart point t of lower_arc;
+tau=direction t of lower_arc;
+labels(10a,10b,10c,10d,10e,10f);
+fill subpath(1,t) of lower_arc & z10a{-tau}
+ ...serif_darkness[z10l,.5[z10a,z10b]]
+ ...rcorner(z10b,srnd,-90,0)--rcorner(z10c,srnd,0,90)
+ --rcorner(z10d,srnd,90,180)--rcorner(z10e,srnd,180,-90)
+ ...serif_darkness[z10r,.5[z10e,z10f]]...{sigma}z10f
+ & subpath(s,1) of upper_arc--cycle;			% upper barb
+penpos9(slab,-90); z9l=z8l; x9b=x9l; y9l-y9b=-.8jut;
+y9c=y9b; x9c-x9b=x9d-x9e=-slab;
+y9d=y9e=0; x9e=x9b;
+path upper_arc,lower_arc;
+numeric s,t,s_bracket; pair sigma,tau;
+upper_arc=z7l{left}....{x8-x7,2(y8-y7)}z8l;
+lower_arc=z7r{left}....{x8-x7,2(y8-y7)}z8r; s_bracket=.5bracket;
+s=xpart(upper_arc intersectiontimes ((x9+s_bracket,0)--(x9+s_bracket,hl)));
+x9a=xpart point s of upper_arc; y9a=ypart point s of upper_arc;
+sigma=direction s of upper_arc;  s_bracket:=.7bracket;
+t=xpart(lower_arc intersectiontimes ((x9+s_bracket,0)--(x9+s_bracket,hl)));
+x9f=xpart point t of lower_arc; y9f=ypart point t of lower_arc;
+tau=direction t of lower_arc;
+labels(9a,9b,9c,9d,9e,9f);
+fill subpath(0,s) of upper_arc & z9a{tau}
+ ...serif_darkness[z9l,.5[z9a,z9b]]
+ ...rcorner(z9b,srnd,90,180)--rcorner(z9c,srnd,180,-90)
+ --rcorner(z9d,srnd,-90,0)--rcorner(z9e,srnd,0,90)
+ ...serif_darkness[z9r,.5[z9e,z9f]]...{-sigma}z9f
+ & subpath(t,0) of lower_arc--cycle;			% lower barb
+penlabels(0,1,2,3,4,5,6,7,8,9,10); endletter;
+
+veritas:=veritas+currentpicture;
+forsuffixes $=1,2,3,4,5,6,7,8,9,10:
+ x$:=whatever; y$:=whatever;
+ forsuffixes @=l,r,a,b,c,d,e,f:
+  x$.@:=whatever; y$.@:=whatever; endfor endfor
+
+ currenttransform:=identity;
+ currentpicture := border + veribook + tasbook + veritas;
+endchar;
+
+end;
