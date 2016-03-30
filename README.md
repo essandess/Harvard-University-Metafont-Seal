@@ -12,7 +12,6 @@ This Metafont code may be used to include the Harvard seal within TeX and LaTeX 
 ### Metafont proof
 
 The Metafont proof above was created using the TeXLive commands:
-
 ```
 mktextfm gray ; mktextfm black
 mf '\mode:=proof; mag:=360/2602; input harvard64.mf'
@@ -22,9 +21,7 @@ dvipdf harvard64.dvi
 
 ### TeX document
 
-This TeX file produces the seal.
-
-hlogo.tex
+The TeX file [`hlogo.tex`](https://github.com) produces the seal.
 ```
 \nopagenumbers
 
