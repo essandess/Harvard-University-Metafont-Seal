@@ -1,5 +1,6 @@
 # Harvard University Metafont Seal
-Harvard's seal in Metafont
+
+Harvard's seal in Metafont: ![Harvard University](https://github.com/essandess/Harvard-University-Metafont-Seal/blob/master/hlogo.png)
 
 ![Harvard University Metafont Seal](https://github.com/essandess/Harvard-University-Metafont-Seal/blob/master/Harvard%20Seal%20metafont.png)
 
